@@ -21,16 +21,14 @@ class BrickManager(Turtle):
         self.all_bricks = []
         self.num_of_rows = 5
         self.hideturtle()
-
         self.all_pos = self.generate_brick_positions()
+        self.brick_pos = {}
 
     def generate_brick_positions(self):
-        all_rows = {}
 
-        self.stretch_len = random.randint(5, 9)
-        self.stretch_height = random.randint(1, 3)
+        self.stretch_len = random.randint(5, 8)
+        self.stretch_height = random.randint(1, 2)
 
-        # TODO: generate height and width for bricks dynamically and get positions that will work to position them
         self.brick_height_pixel = self.stretch_height * 10
         self.brick_width_pixel = 20 * self.stretch_len
 
@@ -49,15 +47,16 @@ class BrickManager(Turtle):
             ]
             for i in range(self.num_of_rows)
         }
-        print(all_rows)
         return all_rows
     def create_bricks(self, row):
-        # self.all_pos = self.generate_brick_positions()
-
         for x, y in self.all_pos[row]:
+            self.brick_pos[row] = []
             new_brick = Turtle("square")
 
             new_brick.shapesize(stretch_wid=self.stretch_height, stretch_len=self.stretch_len)
             new_brick.penup()
             new_brick.color(random.choice(COLORS))
             new_brick.goto(x, y)
+            self.all_bricks.append(new_brick)
+
+

@@ -6,6 +6,7 @@ from ball import Ball
 from brick import BrickManager
 import random
 import math
+
 BG_COLOR = '#211832'  # 561530
 
 # initialize the screen
@@ -25,8 +26,10 @@ wn.tracer(0)
 
 paddle = Paddle()
 ball = Ball()
+
 bricks = BrickManager()
 keys_pressed = set()
+
 
 def move_paddle():
     current_x = paddle.pos()[0]
@@ -39,10 +42,14 @@ def move_paddle():
     wn.update()
     wn.ontimer(move_paddle, 50)
 
+
 def key_down(key):
     keys_pressed.add(key)
+
+
 def key_up(key):
     keys_pressed.discard(key)
+
 
 wn.listen()
 wn.onkeypress(lambda: key_down('Left'), 'Left')
@@ -52,19 +59,30 @@ wn.onkeypress(lambda: key_down('Right'), 'Right')
 wn.onkeyrelease(lambda: key_up('Right'), 'Right')
 move_paddle()
 
-# game_is_on = True
-# while game_is_on:
-#     time.sleep(0.1)
-num_of_rows = 5
-
-for i in range(num_of_rows):
+for i in range(bricks.num_of_rows):
     wn.update()
-    bricks.create_bricks(i+1)
+    bricks.create_bricks(i + 1)
 
+
+for pos in bricks.all_pos[5][:]:
+    wn.tracer(1)
+    print('Initial all pos', bricks.all_pos[5])
+
+    rand_pos = random.choice(bricks.all_pos[5])
+    bricks.all_pos[5].remove(rand_pos)
+    ball.move(rand_pos[0], rand_pos[1]-(bricks.stretch_height*10+bricks.spacing))
+    # print(bricks.all_bricks)
+    for brick in bricks.all_bricks:
+
+        if brick.distance(ball) < 40:
+            brick.hideturtle()
+    ball.goto(0, -((HEIGHT / 2) - 25))
+    # ball.move()
+print('position after', ball.pos())
 
 def handle_click(x, y):
     print(f"Clicked at coordinates: ({x}, {y})")
-    # paddle.goto(x, y)
+
 
 wn.onscreenclick(handle_click)
 
