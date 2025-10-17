@@ -50,13 +50,9 @@ class BrickManager(Turtle):
         return all_rows
     def create_bricks(self, row):
         for x, y in self.all_pos[row]:
-            self.brick_pos[row] = []
             new_brick = Turtle("square")
-
             new_brick.shapesize(stretch_wid=self.stretch_height, stretch_len=self.stretch_len)
             new_brick.penup()
             new_brick.color(random.choice(COLORS))
             new_brick.goto(x, y)
             self.all_bricks.append(new_brick)
-
-

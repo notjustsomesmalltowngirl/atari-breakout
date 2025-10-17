@@ -3,10 +3,11 @@ from globals import WIDTH, HEIGHT
 import turtle as tt
 from paddle import Paddle
 from ball import Ball
+from scoreboard import ScoreBoard
 from brick import BrickManager
 import random
-import math
 
+# --- EVENT FUNCTIONS ---
 BG_COLOR = '#211832'  # 561530
 
 # initialize the screen
@@ -26,64 +27,103 @@ wn.tracer(0)
 
 paddle = Paddle()
 ball = Ball()
+score_board = ScoreBoard()
 
 bricks = BrickManager()
+
+X_LIM = WIDTH/2-100
+
+def move_paddle_with_mouse(event):
+    x = event.x - wn.window_width() / 2
+    paddle.setx(x)
+
 keys_pressed = set()
-
-
-def move_paddle():
-    current_x = paddle.pos()[0]
-    if "Left" in keys_pressed and current_x > -300.0:
-        print(paddle.pos())
-        paddle.backward(100)
-    elif "Right" in keys_pressed and current_x < 300.0:
-        print(paddle.pos())
-        paddle.forward(100)
-    wn.update()
-    wn.ontimer(move_paddle, 50)
-
-
 def key_down(key):
     keys_pressed.add(key)
-
-
 def key_up(key):
     keys_pressed.discard(key)
+def move_paddle_with_keys():
+    current_x = paddle.pos()[0]
+    if "Left" in keys_pressed and current_x >= -(X_LIM+10):
+        paddle.backward(100)
+    elif "Right" in keys_pressed and current_x <= (X_LIM+10):
+        paddle.forward(100)
+    wn.update()
+    wn.ontimer(move_paddle_with_keys, 50)
 
-
+# EVENT BINDING
+canvas.bind("<Motion>", move_paddle_with_mouse)
 wn.listen()
 wn.onkeypress(lambda: key_down('Left'), 'Left')
 wn.onkeyrelease(lambda: key_up('Left'), 'Left')
 
 wn.onkeypress(lambda: key_down('Right'), 'Right')
 wn.onkeyrelease(lambda: key_up('Right'), 'Right')
-move_paddle()
+move_paddle_with_keys()
 
 for i in range(bricks.num_of_rows):
     wn.update()
     bricks.create_bricks(i + 1)
 
 
-for pos in bricks.all_pos[5][:]:
-    wn.tracer(1)
-    print('Initial all pos', bricks.all_pos[5])
+while True:
+    score_board.display_lives()
+    # score_board.display_level()
+    distances = [20, 50, 30, 40, 50, 60]
+    time.sleep(ball.move_speed)
+    wn.update()
+    ball.move()
+    ball_x_position, ball_y_position = ball.position()
 
-    rand_pos = random.choice(bricks.all_pos[5])
-    bricks.all_pos[5].remove(rand_pos)
-    ball.move(rand_pos[0], rand_pos[1]-(bricks.stretch_height*10+bricks.spacing))
-    # print(bricks.all_bricks)
+    # check if the ball is hitting the side walls
+    if ball_x_position < - (X_LIM + 100) or ball_x_position > (X_LIM + 100):
+        ball.bounce_x()
+        # if the ball is on the left side, move it forward
+        if ball_x_position < 0: ball.forward(random.choice(distances))
+        # else move it backward
+        else: ball.backward(random.choice(distances))
+
+    # check if the ball is hitting top wall
+    if ball_y_position >= 230:
+
+        print("Ball in y positive danger zone.") # TODO: bug gets stuck here sometimes
+        ball.backward(30)
+        ball.bounce_y()
+        # ball.forward(random.choice(distances))
+    # if the ball hits the bottom wall,
+    if ball_y_position <= -230:
+        # check if it collides with the paddle
+        if ball.distance(paddle) <= 60:
+            ball.bounce_y()
+        else:
+            ball.reset_position()
+            score_board.decrease_lives()
+            if score_board.lives == 0:
+                ball.hideturtle()
+                paddle.hideturtle()
+                score_board.display_score(f'Game over: You hit {score_board.score} bricks.')
+                break
+    # loop through all bricks
     for brick in bricks.all_bricks:
-
-        if brick.distance(ball) < 40:
-            brick.hideturtle()
-    ball.goto(0, -((HEIGHT / 2) - 25))
-    # ball.move()
-print('position after', ball.pos())
-
-def handle_click(x, y):
-    print(f"Clicked at coordinates: ({x}, {y})")
-
-
-wn.onscreenclick(handle_click)
+        # check if the ball has moved close to a brick, if yes
+        if brick.isvisible() and brick.distance(ball) < 80:
+            brick.hideturtle() # remove the brick
+            print('Ball speed: ', ball.move_speed)
+            if ball.move_speed >= 0.01:
+                ball.move_speed -= 0.002
+            score_board.update_score()
+            ball.bounce_y() # make the ball move in the opposite y direction
+            ball.forward(random.choice(distances)) # move it forward
+            break
+    no_visible_brick = True
+    for brick in bricks.all_bricks:  # check if all bricks are gone
+        if brick.isvisible():
+            no_visible_brick = False
+            break
+    if no_visible_brick:
+        score_board.display_score(f'You hit all {score_board.score} bricks.')
+        ball.hideturtle()
+        paddle.hideturtle()
+        break
 
 wn.mainloop()
