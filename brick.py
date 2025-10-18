@@ -1,6 +1,5 @@
 from turtle import Turtle
 import random
-import time
 import math
 from globals import WIDTH, HEIGHT
 
@@ -48,6 +47,7 @@ class BrickManager(Turtle):
             for i in range(self.num_of_rows)
         }
         return all_rows
+
     def create_bricks(self, row):
         for x, y in self.all_pos[row]:
             new_brick = Turtle("square")

@@ -77,19 +77,18 @@ while True:
 
     # check if the ball is hitting the side walls
     if ball_x_position < - (X_LIM + 100) or ball_x_position > (X_LIM + 100):
-        ball.bounce_x()
-        # if the ball is on the left side, move it forward
         if ball_x_position < 0: ball.forward(random.choice(distances))
         # else move it backward
         else: ball.backward(random.choice(distances))
+        ball.bounce_x()
 
     # check if the ball is hitting top wall
     if ball_y_position >= 230:
-
+        ball.sety(229)
         print("Ball in y positive danger zone.") # TODO: bug gets stuck here sometimes
-        ball.backward(30)
+        # ball.backward(100)
         ball.bounce_y()
-        # ball.forward(random.choice(distances))
+
     # if the ball hits the bottom wall,
     if ball_y_position <= -230:
         # check if it collides with the paddle
@@ -108,7 +107,6 @@ while True:
         # check if the ball has moved close to a brick, if yes
         if brick.isvisible() and brick.distance(ball) < 80:
             brick.hideturtle() # remove the brick
-            print('Ball speed: ', ball.move_speed)
             if ball.move_speed >= 0.01:
                 ball.move_speed -= 0.002
             score_board.update_score()
